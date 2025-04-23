@@ -18,12 +18,13 @@ app.get('/', (req, res) => {
 app.post('/absendo/api', async (req, res) => {
     try {
         console.log('Received POST to /events with body:', req.body);
-        const { date, user_id, reason, is_excused } = req.body;
+        const { date, user_id, reason, is_excused, isFullNameEnabled } = req.body;
 
         const form_data = {
             date: new Date(date),
             reason,
-            is_excused
+            is_excused,
+            isFullNameEnabled
         };
 
         const filledPdf = await getPdfData(user_id, form_data);

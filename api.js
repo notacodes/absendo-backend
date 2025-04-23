@@ -13,11 +13,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function getPdfData(user_id, form_data) {
     const userData = await getUserData(user_id);
     const url = userData.calendar_url;
-    console.log(userData);
     const events = await getICALData(url);
     getWeekday(form_data.date);
     const processedEvents = processEvents(events, form_data.date);
-    console.log(processedEvents);
     return fillForm(userData, processedEvents, form_data);
 
 }
@@ -141,11 +139,17 @@ async function processPDF() {
 
 function formatBirthday(birthday) {
     const date = new Date(birthday);
-    const day = String(date.getDate()).padStart(2, '0'); // Tag mit führender Null
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Monat mit führender Null
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
 
     return `${day}.${month}.${year}`;
+}
+
+function getTeacherName(shortname) {
+    const teachersData = fs.readFileSync('teachers24-25.json', 'utf8');
+    const teachers = JSON.parse(teachersData);
+    return teachers[shortname] || shortname;
 }
 
 
@@ -153,8 +157,8 @@ async function fillForm(userData, processedEvents, form_data) {
     const formBytes = fs.readFileSync('Entschuldigung_Urlaubsgesuch_V2023_08_11.pdf');
     const pdfDoc = await PDFDocument.load(formBytes);
     const form = pdfDoc.getForm();
-    const day = String(form_data.date.getDate()).padStart(2, '0'); // Tag mit führender Null
-    const month = String(form_data.date.getMonth() + 1).padStart(2, '0'); // Monat mit führender Null (Monate sind 0-basiert)
+    const day = String(form_data.date.getDate()).padStart(2, '0');
+    const month = String(form_data.date.getMonth() + 1).padStart(2, '0');
     const year = form_data.date.getFullYear();
 
     const formattedDate = `${day}.${month}.${year}`;
@@ -177,6 +181,10 @@ async function fillForm(userData, processedEvents, form_data) {
     if (processedEvents.length > 0 && processedEvents.length <= 7) {
         for (let i = 0; i < processedEvents.length; i++) {
             const event = processedEvents[i];
+            if(form_data.isFullNameEnabled === true) {
+                event.lehrer = getTeacherName(event.lehrer);
+            }
+
             form.getTextField(`Anzahl LektionenRow${i + 1}`).setText(event.count.toString());
             form.getTextField(`Wochentag und Da tumRow${i + 1}`).setText(event.datum);
             form.getTextField(`FachRow${i + 1}`).setText(event.fach);
