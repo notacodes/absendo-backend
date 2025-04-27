@@ -24,8 +24,9 @@ jobs:
 
       - name: Set up SSL certificates
         run: |
-          sudo echo "$SSL_PRIVATE_KEY" > /etc/ssl/private/privkey.pem
-          sudo echo "$SSL_CERT_CHAIN" > /etc/ssl/certs/fullchain.pem
+          mkdir -p $HOME/ssl
+          echo "$SSL_PRIVATE_KEY" > $HOME/ssl/privkey.pem
+          echo "$SSL_CERT_CHAIN" > $HOME/ssl/fullchain.pem
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
@@ -45,6 +46,7 @@ jobs:
             docker stop absendo-docker || true
             docker rm absendo-docker || true
              docker run -d --restart always --name absendo-docker -p 3001:3001 \
+            -v $HOME/ssl:/etc/ssl:ro \
             -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
             -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
             absendo/docker-image:latest
