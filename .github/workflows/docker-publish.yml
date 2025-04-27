@@ -46,10 +46,11 @@ jobs:
             docker stop absendo-docker || true
             docker rm absendo-docker || true
             docker exec absendo-docker mkdir -p /etc/ssl
+            docker exec echo "meep" > /etc/ssl
+            docker exec echo "meep" > /etc
             docker cp $HOME/ssl/privkey.pem absendo-docker:/etc/ssl/privkey.pem
             docker cp $HOME/ssl/fullchain.pem absendo-docker:/etc/ssl/fullchain.pem
             docker run -d --restart always --name absendo-docker -p 3001:3001 \
-              -v $HOME/ssl:/etc/ssl:ro \
               -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
               -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
               absendo/docker-image:latest
