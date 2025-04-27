@@ -5,7 +5,7 @@ const { getPdfData} = require('./api');
 
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:5173'
+    origin: ['http://localhost:5173', 'https://absendo.vercel.app']
 }));
 
 app.get('/', (req, res) => {
@@ -40,7 +40,7 @@ app.post('/absendo/api', async (req, res) => {
 
 
 
-const PORT = 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
