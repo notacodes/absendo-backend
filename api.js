@@ -147,7 +147,7 @@ function formatBirthday(birthday) {
 }
 
 function getTeacherName(shortname) {
-    const teachersData = fs.readFileSync('teachers24-25.json', 'utf8');
+    const teachersData = fs.readFileSync('teachers24-25-bbzw.json', 'utf8');
     const teachers = JSON.parse(teachersData);
     return teachers[shortname] || shortname;
 }
