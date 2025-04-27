@@ -6,8 +6,8 @@ const cors = require('cors');
 const { getPdfData} = require('./api');
 
 const options = {
-    key: fs.readFileSync('$GITHUB_WORKSPACE/fullchain.pem'),
-    cert: fs.readFileSync('$GITHUB_WORKSPACE/privkey.pem')
+    key: fs.readFileSync('/etc/ssl/certs/fullchain.pem'),
+    cert: fs.readFileSync('/etc/ssl/private/privkey.pem')
 };
 
 app.use(express.json());
