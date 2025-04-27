@@ -42,13 +42,16 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            mkdir -p ~/ssl
+            echo "${{ secrets.SSL_PRIVATE_KEY }}" > ~/ssl/privkey.pem
+            echo "${{ secrets.SSL_CERT_CHAIN }}" > ~/ssl/fullchain.pem
+            
             docker pull absendo/docker-image:latest
             docker stop absendo-docker || true
             docker rm absendo-docker || true
-            docker exec absendo-docker mkdir -p /app/ssl/
-            docker cp $HOME/ssl/privkey.pem absendo-docker:/app/ssl/privkey.pem
-            docker cp $HOME/ssl/fullchain.pem absendo-docker:/app/ssl/fullchain.pem
+            
             docker run -d --restart always --name absendo-docker -p 3001:3001 \
               -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
               -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
+              -v ~/ssl:/app/ssl \
               absendo/docker-image:latest

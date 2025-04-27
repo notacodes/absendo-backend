@@ -6,8 +6,8 @@ const cors = require('cors');
 const { getPdfData} = require('./api');
 
 const options = {
-    key: fs.readFileSync('./ssl/fullchain.pem'),
-    cert: fs.readFileSync('./ssl/privkey.pem')
+    key: fs.readFileSync('/app/ssl/fullchain.pem'),
+    cert: fs.readFileSync('/app/ssl/privkey.pem')
 };
 
 app.use(express.json());
