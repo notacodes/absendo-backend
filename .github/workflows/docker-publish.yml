@@ -25,8 +25,8 @@ jobs:
       - name: Set up SSL certificates
         run: |
           mkdir -p $HOME/ssl
-          echo "$SSL_PRIVATE_KEY" > $HOME/ssl/privkey.pem
-          echo "$SSL_CERT_CHAIN" > $HOME/ssl/fullchain.pem
+          echo "${{ secrets.SSL_PRIVATE_KEY }}" > $HOME/ssl/privkey.pem
+          echo "${{ secrets.SSL_CERT_CHAIN }}" > $HOME/ssl/fullchain.pem
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
@@ -48,8 +48,8 @@ jobs:
             docker exec absendo-docker mkdir -p /etc/ssl
             docker cp $HOME/ssl/privkey.pem absendo-docker:/etc/ssl/privkey.pem
             docker cp $HOME/ssl/fullchain.pem absendo-docker:/etc/ssl/fullchain.pem
-             docker run -d --restart always --name absendo-docker -p 3001:3001 \
-            -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-            -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
-            absendo/docker-image:latest
-
+            docker run -d --restart always --name absendo-docker -p 3001:3001 \
+              -v $HOME/ssl:/etc/ssl:ro \
+              -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+              -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
+              absendo/docker-image:latest
