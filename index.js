@@ -1,7 +1,14 @@
 const express = require('express');
 const app = express();
+const https = require('https');
+const fs = require('fs');
 const cors = require('cors');
 const { getPdfData} = require('./api');
+
+const options = {
+    key: fs.readFileSync('/etc/letsencrypt/live/deine-domain.de/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/deine-domain.de/fullchain.pem')
+};
 
 app.use(express.json());
 app.use(cors({
@@ -41,6 +48,6 @@ app.post('/absendo/api', async (req, res) => {
 
 
 const PORT = 3001;
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+https.createServer(options, app).listen(PORT, () => {
+    console.log(`Server is running on https://localhost:${PORT}`);
 });
