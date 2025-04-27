@@ -42,14 +42,26 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            # Erstellen Sie das SSL-Verzeichnis
             mkdir -p ~/ssl
-            echo "${{ secrets.SSL_PRIVATE_KEY }}" > ~/ssl/privkey.pem
-            echo "${{ secrets.SSL_CERT_CHAIN }}" > ~/ssl/fullchain.pem
-            
+
+            # Speichern Sie die Zertifikate mit korrekter Formatierung
+            cat << 'EOT' > ~/ssl/privkey.pem
+            ${{ secrets.SSL_PRIVATE_KEY }}
+            EOT
+
+            cat << 'EOT' > ~/ssl/fullchain.pem
+            ${{ secrets.SSL_CERT_CHAIN }}
+            EOT
+
+            # Stellen Sie sicher, dass die Rechte korrekt sind
+            chmod 600 ~/ssl/privkey.pem
+            chmod 600 ~/ssl/fullchain.pem
+
             docker pull absendo/docker-image:latest
             docker stop absendo-docker || true
             docker rm absendo-docker || true
-            
+
             docker run -d --restart always --name absendo-docker -p 3001:3001 \
               -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
               -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
