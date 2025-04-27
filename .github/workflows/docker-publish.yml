@@ -22,6 +22,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Set up SSL certificates
+        run: |
+          echo "$SSL_PRIVATE_KEY" > /etc/ssl/private/privkey.pem
+          echo "$SSL_CERT_CHAIN" > /etc/ssl/certs/fullchain.pem    
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
