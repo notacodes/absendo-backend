@@ -42,17 +42,17 @@ jobs:
             # Private Key formatieren
             echo "-----BEGIN PRIVATE KEY-----" > ~/ssl/privkey.pem
             echo "${{ secrets.SSL_PRIVATE_KEY }}" | tr -d '\n' | fold -w 64 >> ~/ssl/privkey.pem
-            echo "-----END PRIVATE KEY-----" >> ~/ssl/privkey.pem
+            echo -e "\n-----END PRIVATE KEY-----" >> ~/ssl/privkey.pem
             
             # Erstes Zertifikat formatieren
             echo "-----BEGIN CERTIFICATE-----" > ~/ssl/fullchain.pem
             echo "${{ secrets.SSL_CERT_CHAIN }}" | tr -d '\n' | fold -w 64 >> ~/ssl/fullchain.pem
-            echo "-----END CERTIFICATE-----" >> ~/ssl/fullchain.pem
+            echo -e "\n-----END CERTIFICATE-----" >> ~/ssl/fullchain.pem
             
             # Zweites Zertifikat anhängen
-            echo "-----BEGIN CERTIFICATE-----" >> ~/ssl/fullchain.pem
+            echo -e "\n-----BEGIN CERTIFICATE-----" >> ~/ssl/fullchain.pem
             echo "${{ secrets.SSL_CERT_CHAIN1 }}" | tr -d '\n' | fold -w 64 >> ~/ssl/fullchain.pem
-            echo "-----END CERTIFICATE-----" >> ~/ssl/fullchain.pem
+            echo -e "\n-----END CERTIFICATE-----" >> ~/ssl/fullchain.pem
             
             # Rechte setzen
             chmod 600 ~/ssl/privkey.pem
