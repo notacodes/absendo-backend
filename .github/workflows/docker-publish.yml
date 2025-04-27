@@ -39,5 +39,8 @@ jobs:
             docker pull absendo/docker-image:latest
             docker stop absendo-docker || true
             docker rm absendo-docker || true
-            docker run -d --restart always --name absendo-docker -p 3001:3001 \ -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \ -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \ absendo/docker-image:latest
+             docker run -d --restart always --name absendo-docker -p 3001:3001 \
+            -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
+            absendo/docker-image:latest
 
