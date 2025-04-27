@@ -45,6 +45,9 @@ jobs:
             docker pull absendo/docker-image:latest
             docker stop absendo-docker || true
             docker rm absendo-docker || true
+            docker exec absendo-docker mkdir -p /etc/ssl
+            docker cp $HOME/ssl/privkey.pem absendo-docker:/etc/ssl/privkey.pem
+            docker cp $HOME/ssl/fullchain.pem absendo-docker:/etc/ssl/fullchain.pem
              docker run -d --restart always --name absendo-docker -p 3001:3001 \
             -v $HOME/ssl:/etc/ssl:ro \
             -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
