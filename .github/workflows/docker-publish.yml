@@ -63,8 +63,10 @@ jobs:
             docker stop absendo-docker || true
             docker rm absendo-docker || true
             
-            docker run -d --restart always --name absendo-docker -p 3001:3001 \
+            sudo docker run -d --restart always --name absendo-docker -p 443:443 \
               -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
               -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
               -v ~/ssl:/app/ssl \
               absendo/docker-image:latest
+            
+            docker images | grep 'absendo/docker-image' | grep -v latest | awk '{print $3}' | xargs docker rmi
