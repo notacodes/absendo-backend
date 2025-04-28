@@ -13,7 +13,7 @@ const options = {
 
 app.use(express.json());
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://absendo.vercel.app']
+    origin: ['http://localhost:5173', 'https://absendo.vercel.app', 'https://absendo.app'],
 }));
 app.options('*', cors());
 
