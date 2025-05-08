@@ -17,8 +17,10 @@ async function getPdfData(user_id, form_data) {
     const events = await getICALData(url);
     getWeekday(form_data.date);
     const processedEvents = processEvents(events, form_data.date);
-    return fillForm(userData, processedEvents, form_data);
-
+    const pdfForm = await fillForm(userData, processedEvents, form_data);
+    const pdfBlob = new Blob([pdfForm], { type: 'application/pdf' });
+    await savePdfInDB(pdfBlob, user_id, form_data.fileName, form_data.date, form_data.reason);
+    return pdfForm
 }
 
 
@@ -195,4 +197,81 @@ async function fillForm(userData, processedEvents, form_data) {
 
     return await pdfDoc.save();
 }
+
+async function savePdfInDB(pdfForm, userId, fileName, dateOfAbsence, reason) {
+    if (!(await checkUserIdExists(userId))) return;
+
+    const filePathBase = `${userId}/forms/`;
+    const extensionIndex = fileName.lastIndexOf('.');
+    const baseName = extensionIndex !== -1 ? fileName.substring(0, extensionIndex) : fileName;
+    const extension = extensionIndex !== -1 ? fileName.substring(extensionIndex) : '';
+
+    const { data: files, error } = await supabase.storage
+        .from('pdf-files')
+        .list(filePathBase);
+
+    if (error) {
+        console.error("Fehler beim Abrufen der Dateien:", error);
+        return;
+    }
+
+    const existingNames = new Set(files.map(f => f.name));
+
+    let counter = 0;
+    let uniqueFileName;
+    while (true) {
+        uniqueFileName = counter === 0
+            ? `${baseName}${extension}`
+            : `${baseName} (${counter})${extension}`;
+
+        if (!existingNames.has(uniqueFileName)) break;
+        counter++;
+    }
+
+    const filePath = `${filePathBase}${uniqueFileName}`;
+    console.log("Hochladen als:", filePath);
+
+    const { data: uploadData, error: uploadError } = await supabase
+        .storage
+        .from('pdf-files')
+        .upload(filePath, pdfForm, {
+            metadata: {
+                dateOfAbsence: dateOfAbsence
+            }
+        });
+
+    const { error: dbError } = await supabase
+        .from('pdf_files')
+        .insert({
+            user_id: userId,
+            file_path: filePath,
+            date_of_absence: dateOfAbsence,
+            reason: reason,
+            pdf_name: fileName
+        })
+
+    if (dbError) {
+        console.error('Fehler beim Speichern der Metadaten:', dbError)
+    }
+
+    if (uploadError) {
+        console.error("Fehler beim Hochladen:", uploadError);
+    } else {
+        console.log("Erfolgreich hochgeladen:", uploadData);
+    }
+}
+
+
+
+async function checkUserIdExists(userId) {
+    const { error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+    return !error;
+
+}
+
 module.exports = { getPdfData };

@@ -13,7 +13,7 @@ const options = {
 
 app.use(express.json());
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://absendo.vercel.app', 'https://absendo.app'],
+    origin: ['http://localhost:5173', 'https://absendo.vercel.app', 'https://absendo.app', 'http://localhost:443'],
 }));
 app.options('*', cors());
 
@@ -27,13 +27,14 @@ app.get('/', (req, res) => {
 app.post('/absendo/api', async (req, res) => {
     try {
         console.log('Received POST to /events with body:', req.body);
-        const { date, user_id, reason, is_excused, isFullNameEnabled } = req.body;
+        const { date, user_id, reason, is_excused, isFullNameEnabled, fileName } = req.body;
 
         const form_data = {
             date: new Date(date),
             reason,
             is_excused,
-            isFullNameEnabled
+            isFullNameEnabled,
+            fileName
         };
 
         const filledPdf = await getPdfData(user_id, form_data);
