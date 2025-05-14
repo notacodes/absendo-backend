@@ -40,7 +40,7 @@ app.post('/absendo/api', async (req, res) => {
         const filledPdf = await getPdfData(user_id, form_data);
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=filled-form.pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=${form_data.fileName}`);
         res.send(Buffer.from(filledPdf));
     } catch (error) {
         console.error('Error in /events:', error.message);
