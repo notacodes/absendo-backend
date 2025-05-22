@@ -27,13 +27,14 @@ app.get('/', (req, res) => {
 app.post('/absendo/api', async (req, res) => {
     try {
         console.log('Received POST to /events with body:', req.body);
-        const { date, user_id, reason, is_excused, isFullNameEnabled, fileName } = req.body;
+        const { date, user_id, reason, is_excused, isFullNameEnabled, isFullSubjectEnabled, fileName } = req.body;
 
         const form_data = {
             date: new Date(date),
             reason,
             is_excused,
             isFullNameEnabled,
+            isFullSubjectEnabled,
             fileName
         };
 

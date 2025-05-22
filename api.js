@@ -155,6 +155,12 @@ function getTeacherName(shortname) {
     return teachers[shortname] || shortname;
 }
 
+function getSubjectName(shortSubjectName) {
+    const subjectData = fs.readFileSync('subjects24-25-bbzw.json', 'utf8');
+    const subjects = JSON.parse(subjectData);
+    return subjects[shortSubjectName] || shortSubjectName;
+}
+
 
 async function fillForm(userData, processedEvents, form_data) {
     const formBytes = fs.readFileSync('Entschuldigung_Urlaubsgesuch_V2023_08_11.pdf');
@@ -186,6 +192,9 @@ async function fillForm(userData, processedEvents, form_data) {
             const event = processedEvents[i];
             if(form_data.isFullNameEnabled === true) {
                 event.lehrer = getTeacherName(event.lehrer);
+            }
+            if(form_data.isFullSubjectEnabled === true) {
+                event.fach = getSubjectName(event.fach);
             }
 
             form.getTextField(`Anzahl LektionenRow${i + 1}`).setText(event.count.toString());
