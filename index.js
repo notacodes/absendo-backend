@@ -49,7 +49,26 @@ app.post('/absendo/api', async (req, res) => {
     }
 });
 
+const allowedOrigin = 'https://schulnetz.lu.ch';
 
+app.get('/proxy', async (req, res) => {
+    const url = req.query.url;
+    if (!url) {
+        return res.status(400).send('URL query parameter is required');
+    }
+
+    try {
+        if (!url.startsWith(allowedOrigin)) {
+            return res.status(403).send('Forbidden: URL not allowed');
+        }
+
+        const response = await fetch(url);
+        const data = await response.text();
+        res.send(data);
+    } catch (error) {
+        res.status(500).send('Error fetching the URL');
+    }
+});
 
 const PORT = 443;
 https.createServer(options, app).listen(PORT, () => {
