@@ -63,7 +63,7 @@ jobs:
             docker stop absendo-docker || true
             docker rm absendo-docker || true
             
-            sudo docker run -d --restart always --name absendo-docker -p 8443:443 \
+            sudo docker run -d --restart always --name absendo-docker -p 8443:8443 \
               -e SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
               -e SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }} \
               -v ~/ssl:/app/ssl \
