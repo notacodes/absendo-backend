@@ -70,7 +70,7 @@ app.get('/proxy', async (req, res) => {
     }
 });
 
-const PORT = 443;
+const PORT = 8443;
 https.createServer(options, app).listen(PORT, () => {
     console.log(`Server is running on https://localhost:${PORT}`);
 });
