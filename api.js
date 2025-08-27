@@ -161,6 +161,13 @@ function getSubjectName(shortSubjectName) {
     return subjects[shortSubjectName] || shortSubjectName;
 }
 
+function extractClasse(events) {
+    if(events[0].type === 'VEVENT') {
+        const matches = events[0].summary.match(/[SWER]-[A-Z]+\d{2}[a-zA-Z]+(?:-LO)?/g);
+        return matches ? matches.join(',') : '';
+    }
+}
+
 
 async function fillForm(userData, processedEvents, form_data) {
     const formBytes = fs.readFileSync('Entschuldigung_Urlaubsgesuch_V2023_08_11.pdf');
@@ -238,8 +245,6 @@ async function savePdfInDB(pdfForm, userId, fileName, dateOfAbsence, reason) {
     }
 
     const filePath = `${filePathBase}${uniqueFileName}`;
-    console.log("Hochladen als:", filePath);
-
     const { data: uploadData, error: uploadError } = await supabase
         .storage
         .from('pdf-files')
@@ -265,8 +270,6 @@ async function savePdfInDB(pdfForm, userId, fileName, dateOfAbsence, reason) {
 
     if (uploadError) {
         console.error("Fehler beim Hochladen:", uploadError);
-    } else {
-        console.log("Erfolgreich hochgeladen:", uploadData);
     }
 }
 
@@ -283,4 +286,17 @@ async function checkUserIdExists(userId) {
 
 }
 
-module.exports = { getPdfData };
+async function getUserCount() {
+    console.log('Getting user count...');
+    const { count, error } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true });
+    if (error) {
+        console.error('Fehler beim Zählen der Benutzer:', error);
+        return 0;
+    }
+    console.log(count)
+    return count
+}
+
+module.exports = { getPdfData, getUserCount };

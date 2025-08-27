@@ -1,14 +1,9 @@
 const express = require('express');
 const app = express();
-const https = require('https');
+const http = require('http');
 const fs = require('fs');
 const cors = require('cors');
-const { getPdfData} = require('./api');
-
-const options = {
-    key: fs.readFileSync('/app/ssl/privkey.pem'),
-    cert: fs.readFileSync('/app/ssl/fullchain.pem')
-};
+const { getPdfData, getUserCount} = require('./api');
 
 
 app.use(express.json());
@@ -70,7 +65,12 @@ app.get('/proxy', async (req, res) => {
     }
 });
 
+app.get('/usercount', async (req, res) => {
+    const userCount = await getUserCount()
+    res.json({userCount: userCount});
+});
+
 const PORT = 8443;
-https.createServer(options, app).listen(PORT, () => {
+http.createServer(app).listen(PORT, () => {
     console.log(`Server is running on https://localhost:${PORT}`);
 });
