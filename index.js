@@ -3,7 +3,7 @@ const app = express();
 const http = require('http');
 const fs = require('fs');
 const cors = require('cors');
-const { getPdfData, getUserCount} = require('./api');
+const { getPdfData, getUserCount, getTimeSaved} = require('./api');
 
 
 app.use(express.json());
@@ -66,9 +66,14 @@ app.get('/proxy', async (req, res) => {
     }
 });
 
-app.get('/usercount', async (req, res) => {
+app.get('/stats/user-count', async (req, res) => {
     const userCount = await getUserCount()
     res.json({userCount: userCount});
+});
+
+app.get('/stats/time-saved', async (req, res) => {
+    const timeSaved = await getTimeSaved()
+    res.json({timeSaved: timeSaved});
 });
 
 const PORT = 8443;

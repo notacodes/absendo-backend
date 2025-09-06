@@ -287,7 +287,6 @@ async function checkUserIdExists(userId) {
 }
 
 async function getUserCount() {
-    console.log('Getting user count...');
     const { count, error } = await supabase
         .from('profiles')
         .select('id', { count: 'exact', head: true });
@@ -295,8 +294,21 @@ async function getUserCount() {
         console.error('Fehler beim Zählen der Benutzer:', error);
         return 0;
     }
-    console.log(count)
     return count
 }
 
-module.exports = { getPdfData, getUserCount };
+async function getTimeSaved() {
+    const { count, error } = await supabase
+        .from('pdf_files')
+        .select('id', { count: 'exact', head: true });
+    if (error) {
+        console.error('Fehler beim Zählen der PDF Files:', error);
+        return 0;
+    }
+    const totalMinutes = count * 5;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return { hours, minutes };
+}
+
+module.exports = { getPdfData, getUserCount, getTimeSaved };
