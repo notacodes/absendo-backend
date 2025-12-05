@@ -5,6 +5,8 @@ const cors = require('cors');
 const { getPdfData, getUserCount, getTimeSaved} = require('./api');
 
 
+app.set('trust proxy', true);
+
 app.use(express.json());
 
 const whitelist = [
@@ -13,14 +15,60 @@ const whitelist = [
     'https://absendo.app'
 ];
 
+const corsLogCooldownSec = Number(process.env.CORS_LOG_COOLDOWN_SEC) || 60;
+const corsLogCache = new Map();
+
+app.use((req, res, next) => {
+    const origin = req.get('origin');
+    const ip = req.ip || (req.connection && req.connection.remoteAddress) || 'unknown';
+    const referer = req.get('referer') || req.get('referrer') || 'none';
+    const ua = req.get('user-agent') || 'unknown';
+    const now = Date.now();
+    const endpoint = req.originalUrl || req.url || req.path || 'unknown';
+
+    const key = `${ip}|${endpoint}|${origin || 'no-origin'}`;
+    const last = corsLogCache.get(key) || 0;
+    if (now - last < corsLogCooldownSec * 1000) {
+        return next();
+    }
+
+    corsLogCache.set(key, now);
+
+    if (!origin) {
+        console.warn(new Date().toISOString(), 'CORS: missing Origin header — will be denied for CORS', {
+            method: req.method,
+            endpoint,
+            ip,
+            referer,
+            userAgent: ua
+        });
+    } else if (!whitelist.includes(origin)) {
+        console.warn(new Date().toISOString(), 'CORS: origin not allowed', {
+            origin,
+            method: req.method,
+            endpoint,
+            ip,
+            referer,
+            userAgent: ua
+        });
+    }
+
+    if (corsLogCache.size > 10000) {
+        const cutoff = now - corsLogCooldownSec * 1000 * 2;
+        for (const [k, v] of corsLogCache.entries()) {
+            if (v < cutoff) corsLogCache.delete(k);
+        }
+    }
+
+    next();
+});
+
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin) {
-            console.warn('CORS: missing Origin header');
             return callback(null, false);
         }
         if (whitelist.includes(origin)) return callback(null, true);
-        console.warn('CORS: origin not allowed:', origin);
         return callback(null, false);
     }
 }));
