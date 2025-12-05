@@ -15,9 +15,13 @@ const whitelist = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin) return callback(new Error('Not allowed by CORS: missing Origin'));
+        if (!origin) {
+            console.warn('CORS: missing Origin header');
+            return callback(null, false);
+        }
         if (whitelist.includes(origin)) return callback(null, true);
-        return callback(new Error('Not allowed by CORS'));
+        console.warn('CORS: origin not allowed:', origin);
+        return callback(null, false);
     }
 }));
 app.options('*', cors());
@@ -25,16 +29,28 @@ app.options('*', cors());
 const allowedFrontends = new Set(whitelist);
 function restrictToFrontend(req, res, next) {
     const origin = req.get('origin');
+    const ip = req.ip || req.connection && req.connection.remoteAddress || 'unknown';
+    const referer = req.get('referer') || req.get('referrer') || 'none';
+
     if (!origin || !allowedFrontends.has(origin)) {
-        console.warn('Blocked request with origin:', origin, 'path:', req.path);
-        return res.status(403).json({ error: 'Forbidden: invalid origin' });
+        console.warn('Blocked request from origin:', origin, 'ip:', ip, 'referer:', referer, 'path:', req.path);
+        return res.status(403).json({
+            warning: 'Forbidden: invalid origin',
+            origin: origin || null,
+            ip,
+            referer
+        });
     }
 
     if (process.env.FRONTEND_API_KEY) {
         const apiKey = req.get('x-api-key');
         if (!apiKey || apiKey !== process.env.FRONTEND_API_KEY) {
-            console.warn('Blocked request with invalid api key from origin:', origin);
-            return res.status(403).json({ error: 'Forbidden: invalid api key' });
+            console.warn('Blocked request with invalid api key from origin:', origin, 'ip:', ip);
+            return res.status(403).json({
+                warning: 'Forbidden: invalid api key',
+                origin,
+                ip
+            });
         }
     }
 
