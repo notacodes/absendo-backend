@@ -29,7 +29,3 @@ jobs:
           push: true
           tags: absendo/docker-image:latest
 
-      - name: Trigger Webhook
-        if: success()
-        run: |
-          curl -X POST "${{ secrets.WEBHOOK_URL }}"
