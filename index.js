@@ -15,12 +15,27 @@ const whitelist = [
     'https://absendo.app'
 ];
 
+const monitoringIps = (process.env.MONITORING_IPS || '139.162.215.113')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+const monitoringWhitelist = new Set(monitoringIps);
+
 const corsLogCooldownSec = Number(process.env.CORS_LOG_COOLDOWN_SEC) || 60;
 const corsLogCache = new Map();
 
+function normalizeIp(ip) {
+    if (!ip) return 'unknown';
+    return ip.replace(/^::ffff:/, '');
+}
+
 app.use((req, res, next) => {
     const origin = req.get('origin');
-    const ip = req.ip || (req.connection && req.connection.remoteAddress) || 'unknown';
+    const rawIp = req.ip || (req.connection && req.connection.remoteAddress) || 'unknown';
+    const ip = normalizeIp(rawIp);
+
+    if (monitoringWhitelist.has(ip)) return next();
+
     const referer = req.get('referer') || req.get('referrer') || 'none';
     const ua = req.get('user-agent') || 'unknown';
     const now = Date.now();
@@ -77,8 +92,14 @@ app.options('*', cors());
 const allowedFrontends = new Set(whitelist);
 function restrictToFrontend(req, res, next) {
     const origin = req.get('origin');
-    const ip = req.ip || req.connection && req.connection.remoteAddress || 'unknown';
+    const rawIp = req.ip || (req.connection && req.connection.remoteAddress) || 'unknown';
+    const ip = normalizeIp(rawIp);
     const referer = req.get('referer') || req.get('referrer') || 'none';
+
+    // Wenn die IP in der Monitoring-Whitelist ist, erlaube den Request (bypass Origin-Prüfung)
+    if (monitoringWhitelist.has(ip)) {
+        return next();
+    }
 
     if (!origin || !allowedFrontends.has(origin)) {
         console.warn('Blocked request from origin:', origin, 'ip:', ip, 'referer:', referer, 'path:', req.path);
